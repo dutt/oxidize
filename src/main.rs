@@ -44,19 +44,15 @@ fn get_clean_name(script_path: &str) -> String {
 }
 fn main() {
     let args = os::args();
-    println!("{}", args);
     let arg = match args.get(1) {
         Some(a) => a,
         None => panic!("No argument supplied"),
     };
     let cleaned = get_clean_name(arg.as_slice());
-    println!("cleaned: {}", cleaned);
     let src = Path::new(String::from_str(cleaned.as_slice()));
     let target = get_cache_path(Path::new(String::from_str(cleaned.as_slice())));
-    println!("target: {}", target);
     let sysroot = Path::new("/usr/local");
     let cached = has_cache(arg.as_slice(), target.as_slice());
-    println!("cached: {}", cached);
     if !cached {
         compiler::compile_file(src, Path::new(target.clone()), Some(sysroot));
     }

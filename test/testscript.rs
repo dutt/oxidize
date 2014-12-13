@@ -1,9 +1,9 @@
-#!/home/dutt/workspace/runrust/target/runrust
+#!/usr/bin/oxidize
 
 #[allow(unused_must_use)]
 fn main() {
     for _ in range(0i, 2i) {
-        println!("folu {}", std::os::args()[2]);
+        println!("fo {}", std::os::args()[2]);
         std::io::timer::sleep(std::time::duration::Duration::seconds(1))
     }
     /*println!("Enter name:");
