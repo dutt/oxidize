@@ -26,3 +26,8 @@ fo foo
 fo foo
 $
 ```
+
+Why?
+=======
+We're writing rust for systems, embedded, games, web so I got curious about using it for small scripts.
+Well, that and I was bored.
