@@ -1,7 +1,7 @@
 oxidize
 =======
 
-Run rust code with a #!/path/oxidize. No need for a cargo project or anything else. It's compiled into a cache and re-compiled when needed.
+Run rust code with a #!/path/oxidize. No need for a cargo project or anything else. It's compiled into a cache at ~/.rusted and only re-compiled when needed.
 
 stdout, stderr and stdin are handled as well as argument passing.
 
@@ -36,3 +36,8 @@ Why?
 -----
 We're writing rust for systems, embedded, games, web so I got curious about using it for small scripts.
 Well, that and I was bored.
+
+Thanks
+-----
+To all the helpful people in #rust
+Jared https://jaredly.github.io/2014/11/22/rust-compiling-rust-adventures-with-librustc/
