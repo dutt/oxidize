@@ -27,6 +27,11 @@ fo foo
 $
 ```
 
+Contributing
+---------
+
+This is my first public rust project; all sorts of suggestions, tips or general helpfullness is appreciated.
+
 Why?
 -----
 We're writing rust for systems, embedded, games, web so I got curious about using it for small scripts.
