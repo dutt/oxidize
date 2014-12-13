@@ -16,10 +16,13 @@ fn main() {
         println!("fo {}", std::os::args()[2]);
         std::io::timer::sleep(std::time::duration::Duration::seconds(1))
     }
-}```
+}
+```
 
 and then run as usual
+```
 $ ./myscript foo bahr
 fo foo
 fo foo
 $
+```
