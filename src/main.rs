@@ -32,29 +32,45 @@ fn has_cache(script_path: &str, cache_path : &str) -> bool {
     curr.modified < cached.modified
 }
 fn get_cache_path(script_name: Path) -> String {
-    let stem = script_name.filestem().unwrap();
-    format!("/home/dutt/.rusted/{}", String::from_utf8_lossy(stem))
-}
-fn get_clean_name(script_path: &str) -> String {
-    let last_idx = match script_path.rfind(std::path::posix::SEP) {
-        Some(idx) => idx,
-        None => 0
+    let file = script_name.filename_str().unwrap();
+    let stem = match file.rfind('.') {
+        Some(pos) => {
+            file[0..pos]
+        },
+        None => {
+            file
+        },
     };
-    String::from_str(script_path[last_idx+1..script_path.len()])
+    let home = match std::os::homedir() {
+        Some(p) => { let s = p.as_str(); String::from_str(s.unwrap()) },
+        None => panic!("No home directory identified"),
+    };
+    let dir = format!("{}/.rusted/", home);
+    let dirpath = Path::new(dir);
+    match std::io::fs::mkdir_recursive(&dirpath, std::io::USER_RWX) {
+        Ok(_) => {},
+        Err(e) => panic!("Failed to create cache directory: {}", e),
+    }
+    format!("{}/{}", dirpath.as_str().unwrap(), stem)
 }
+
+fn get_filename(script_path: &str) -> String {
+    String::from_str(Path::new(script_path).filename_str().unwrap())
+}
+
 fn main() {
     let args = os::args();
     let arg = match args.get(1) {
         Some(a) => a,
         None => panic!("No argument supplied"),
     };
-    let cleaned = get_clean_name(arg.as_slice());
-    let src = Path::new(String::from_str(cleaned.as_slice()));
-    let target = get_cache_path(Path::new(String::from_str(cleaned.as_slice())));
+    let cleaned = get_filename(arg.as_slice());
+    let src = Path::new(String::from_str(arg.as_slice()));
+    let target = get_cache_path(Path::new(cleaned.as_slice()));
     let sysroot = Path::new("/usr/local");
     let cached = has_cache(arg.as_slice(), target.as_slice());
     if !cached {
-        compiler::compile_file(src, Path::new(target.clone()), Some(sysroot));
+        compiler::compile_file(src, Path::new(target.as_slice()), Some(sysroot));
     }
     
     let mut cmd = Command::new(target);
