@@ -6,7 +6,7 @@ Run rust code with a #!/path/oxidize. No need for a cargo project or anything el
 stdout, stderr and stdin are handled as well as argument passing.
 
 example
-=======
+======
 
 ```rust
 #!/usr/bin/oxidize
@@ -28,6 +28,6 @@ $
 ```
 
 Why?
-=======
+======
 We're writing rust for systems, embedded, games, web so I got curious about using it for small scripts.
 Well, that and I was bored.
