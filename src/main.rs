@@ -1,18 +1,10 @@
- #![feature(slicing_syntax)]
+//extern crate libc;
 
-extern crate libc;
+use std::env;
+use std::process;
+use std::path::Path;
 
-use std::os;
-use std::io::{
-    Command,
-    process,
-};
-use std::path::GenericPath;
-use std::io::fs::PathExtensions;
-
-mod compiler;
-
-fn has_cache(script_path: &str, cache_path : &str) -> bool {
+/*fn has_cache(script_path: &str, cache_path : &str) -> bool {
     let scriptp = Path::new(script_path);
     let cachep = Path::new(cache_path);  
     if !scriptp.exists() || !scriptp.is_file() {
@@ -53,39 +45,56 @@ fn get_cache_path(script_name: Path) -> String {
     }
     format!("{}/{}", dirpath.as_str().unwrap(), stem)
 }
+*/
 
-fn get_filename(script_path: &str) -> String {
-    String::from_str(Path::new(script_path).filename_str().unwrap())
+struct Config {
+    path: String,
+    name: String,
+    args: Vec<String>, 
+}
+
+impl Config {
+    fn new(args: &[String]) -> Result<Config, &'static str> {
+        if args.len() < 1 {
+            return Err("no file specified");
+        }
+        let pathobj = Path::new(&args[1]);
+        let filepath = pathobj.to_str().unwrap().to_string();
+        let filestem = pathobj.file_stem().unwrap().to_str().unwrap().to_string();
+        let mut fargs = Vec::new();
+        for a in args.iter() {
+            fargs.push(a.clone());
+        }
+        fargs.remove(0); //oxidize
+        fargs.remove(0); //script
+        Ok(Config { path: filepath, name: filestem, args: fargs })
+    }
 }
 
 fn main() {
-    let args = os::args();
-    let arg = match args.get(1) {
-        Some(a) => a,
-        None => panic!("No argument supplied"),
-    };
-    let cleaned = get_filename(arg.as_slice());
-    let src = Path::new(String::from_str(arg.as_slice()));
-    let target = get_cache_path(Path::new(cleaned.as_slice()));
-    let sysroot = Path::new("/usr/local");
-    let cached = has_cache(arg.as_slice(), target.as_slice());
-    if !cached {
-        compiler::compile_file(src, Path::new(target.as_slice()), Some(sysroot));
+    let args: Vec<String> = env::args().collect();
+
+    let config = Config::new(&args).unwrap_or_else(|_err| {
+        println!("Failed to parse arguments");
+        process::exit(1);
+    });
+    let compile_output = process::Command::new("rustc").
+                    arg(config.path).
+                    arg("--out-dir=target/cache").
+                    output().
+                    expect("failed to run rustc");
+    if !compile_output.status.success() {
+        println!("compile status: {}", compile_output.status);
+        println!("compile stdout: {}", String::from_utf8_lossy(&compile_output.stdout));
+        println!("compile stderr: {}", String::from_utf8_lossy(&compile_output.stderr));
+        return;
     }
-    
-    let mut cmd = Command::new(target);
-    let mut argsvec: Vec<&String> = Vec::new();
-    for a in args.iter() {
-        argsvec.push(a);
+
+    let target = Path::new("target").join("cache").join(config.name);
+    let mut exec_cmd = process::Command::new(target);
+    for arg in &config.args {
+        exec_cmd.arg(arg);
     }
-    for i in range(1, argsvec.len()) {
-        cmd.arg(argsvec[i]);
-    }
-    cmd.stdout(process::StdioContainer::InheritFd(libc::STDOUT_FILENO));
-    cmd.stderr(process::StdioContainer::InheritFd(libc::STDERR_FILENO));
-    cmd.stdin(process::StdioContainer::InheritFd(libc::STDIN_FILENO));
-    match cmd.spawn() {
-        Ok(_) => (),
-        Err(e) => panic!("Failed to execute process: {}", e),
-    };
+    let mut exec_proc = exec_cmd.spawn().expect("failed to start child");
+    exec_proc.wait().expect("error during execution");
 }

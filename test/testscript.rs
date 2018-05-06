@@ -1,6 +1,5 @@
 #!/usr/bin/oxidize
 
-#[allow(unused_must_use)]
 fn main() {
     for _ in range(0i, 2i) {
         println!("fo {}", std::os::args()[2]);
